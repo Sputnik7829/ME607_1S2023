@@ -45,26 +45,27 @@ tsdf %>%
   facet_grid(vars(var), scales = "free_y")+
   labs(title = "Max Temperature over Campinas Region",
        y = "Daily Max Temperature",
-       x = "Date")
+       x = "Date")+
+  theme_bw()
 
 op = par(mfrow = c(1,2))
-acf(tsdf$temp_max)
-pacf(tsdf$temp_max)
+acf(tsdf$temp_max,main = "Max Temperature Time Series ACF")
+pacf(tsdf$temp_max,main = "Max Temperature Time Series PACF")
 par(op)
 
 op = par(mfrow = c(1,2))
-acf(tsdf$preciptation)
-pacf(tsdf$preciptation)
+acf(tsdf$preciptation,main = "Preciptation Time Series ACF")
+pacf(tsdf$preciptation,main = "Preciptation Time Series PACF")
 par(op)
 
 op = par(mfrow = c(1,2))
-acf(tsdf$windspeed)
-pacf(tsdf$windspeed)
+acf(tsdf$windspeed,main = "Wind Speed Time Series ACF")
+pacf(tsdf$windspeed,main = "Wind Speed Time Series PACF")
 par(op)
 
 op = par(mfrow = c(1,2))
-acf(tsdf$sun_radiation)
-pacf(tsdf$sun_radiation)
+acf(tsdf$sun_radiation,main = "Radiation Time Series ACF")
+pacf(tsdf$sun_radiation,main = "Radiation Time Series PACF")
 par(op)
 
 
@@ -121,13 +122,12 @@ forecast(fit_02, new_data = tsdf_future) |>
 
 #Cross Validation
 
-tsdf[1:(length(tsdf$time)-11),]
-
 metrics = NULL
-
 
 for(i in 0:13){
   df = tsdf[1:(length(tsdf$time)-14+i),]
+  model0 = df %>% 
+    model(ARIMA(temp_max ~ pdq(0,1,4)+ PDQ(2,0,0)))
   model1 = df %>% 
     model(ARIMA(temp_max ~ sun_radiation + pdq(0,1,4)+ PDQ(2,0,0)))
   model2 = df %>% 
@@ -141,28 +141,25 @@ for(i in 0:13){
            sun_radiation = mean(df$sun_radiation),
            windspeed= mean(df$windspeed))
   
+  forecast0 = forecast(model0, new_data = df_future)
   forecast1 = forecast(model1, new_data = df_future)
   forecast2 = forecast(model2, new_data = df_future)
   forecast3 = forecast(model3, new_data = df_future)
   
   df_test = tsdf[(length(tsdf$time)-13+i):(length(tsdf$time)),1:2]
   df_test = df_test %>% 
-    mutate(predict1 = forecast1$.mean,
+    mutate(predict0 = forecast0$.mean,
+           predict1 = forecast1$.mean,
            predict2 = forecast2$.mean,
            predict3 = forecast3$.mean)
   
+  daily_eqm0 = ((df_test$temp_max - df_test$predict0)^2)[1]
   daily_eqm1 = ((df_test$temp_max - df_test$predict1)^2)[1]
   daily_eqm2 = ((df_test$temp_max - df_test$predict2)^2)[1]
   daily_eqm3 = ((df_test$temp_max - df_test$predict3)^2)[1]
   
-  eqm1 = (sum(df_test$temp_max - df_test$predict1)^2)/nrow(df_test)
-  eqm2 = (sum(df_test$temp_max - df_test$predict2)^2)/nrow(df_test)
-  eqm3 = (sum(df_test$temp_max - df_test$predict3)^2)/nrow(df_test)
-  
   metrics_new = data.frame(window = (14 - i),
-                           eqm1 = eqm1,
-                           eqm2 = eqm2,
-                           eqm3 = eqm3,
+                           daily_eqm0 = daily_eqm0,
                            daily_eqm1 = daily_eqm1,
                            daily_eqm2 = daily_eqm2,
                            daily_eqm3 = daily_eqm3)
@@ -170,33 +167,95 @@ for(i in 0:13){
   metrics = rbind(metrics,metrics_new)
 }
 
-metrics %>% 
-  select(1:4) %>% 
-  pivot_longer(names_to = "eqm",cols = -1) %>%
-  mutate(eqm = case_when(eqm=="eqm1"~"Model 1",
-                         eqm=="eqm2"~"Model 2",
-                         eqm=="eqm3"~"Model 3")) %>% 
-  ggplot(aes(x = window, y = sqrt(value), color = eqm))+
-  geom_line(size = 0.8)+
-  scale_color_manual(values = c("darkblue", "red","darkgreen"))+
-  scale_x_reverse()+
-  labs(x = "Window", y = "RMSE", color = "Proposed models")+
-  theme_bw()+
-  theme(legend.position = "bottom")
 
 metrics %>% 
-  select(c(1,5,6,7))%>% 
   pivot_longer(names_to = "daily_eqm",cols = -1)%>%
   mutate(daily_eqm = case_when(daily_eqm=="daily_eqm1"~"Model 1",
                          daily_eqm=="daily_eqm2"~"Model 2",
-                         daily_eqm=="daily_eqm3"~"Model 3")) %>%
+                         daily_eqm=="daily_eqm3"~"Model 3",
+                         daily_eqm=="daily_eqm0"~"Model 0")) %>%
   ggplot(aes(x = window, y = sqrt(value), color = daily_eqm))+
-  geom_line(size = 0.8)+
-  scale_color_manual(values = c("darkblue", "red","darkgreen"))+
+  geom_line(linewidth = 0.8)+
+  scale_color_manual(values = c("darkblue", "red","darkgreen","purple"))+
   scale_x_reverse()+
   labs(x = "Window", y = "RMSE", color = "Proposed Models")+
   theme_bw()+
   theme(legend.position = "bottom")
 
-# Model 2 looks better predict
+# Model 2 or Model 0 looks better to predict
 
+metrics %>% 
+  summarise(mean_daily_model0 = mean(daily_eqm0),
+            mean_daily_model1 = mean(daily_eqm1),
+            mean_daily_model2 = mean(daily_eqm2),
+            mean_daily_model3 = mean(daily_eqm3))
+
+
+
+metrics_alt = NULL
+
+for(i in 0:20){
+  
+  df = tsdf[1:(length(tsdf$time)-28+i),]
+  model0 = df %>% 
+    model(ARIMA(temp_max ~ pdq(0,1,4)+ PDQ(2,0,0)))
+  model1 = df %>% 
+    model(ARIMA(temp_max ~ sun_radiation + pdq(0,1,4)+ PDQ(2,0,0)))
+  model2 = df %>% 
+    model(ARIMA(temp_max ~ windspeed + preciptation + pdq(3,1,1)+ PDQ(1,0,0)))
+  model3 = df %>% 
+    model(ARIMA(temp_max ~ windspeed + preciptation + sun_radiation + pdq(3,0,2)+ PDQ(1,0,0)))
+  
+  df_future = tsdf[(length(tsdf$time)-27+i):(length(tsdf$time)-21+i),1:2]
+  df_future = df_future %>% 
+    mutate(preciptation = mean(df$preciptation),
+           sun_radiation = mean(df$sun_radiation),
+           windspeed= mean(df$windspeed))
+  
+  forecast0 = forecast(model0, new_data = df_future)
+  forecast1 = forecast(model1, new_data = df_future)
+  forecast2 = forecast(model2, new_data = df_future)
+  forecast3 = forecast(model3, new_data = df_future)
+  
+  df_test = tsdf[(length(tsdf$time)-27+i):(length(tsdf$time)-21+i),1:2]
+  df_test = df_test %>% 
+    mutate(predict0 = forecast0$.mean,
+           predict1 = forecast1$.mean,
+           predict2 = forecast2$.mean,
+           predict3 = forecast3$.mean)
+
+  eqm0 = (sum(df_test$temp_max - df_test$predict0)^2)/nrow(df_test)
+  eqm1 = (sum(df_test$temp_max - df_test$predict1)^2)/nrow(df_test)
+  eqm2 = (sum(df_test$temp_max - df_test$predict2)^2)/nrow(df_test)
+  eqm3 = (sum(df_test$temp_max - df_test$predict3)^2)/nrow(df_test)
+  
+  metrics_new = data.frame(window = (21 - i),
+                           eqm0 = eqm0,
+                           eqm1 = eqm1,
+                           eqm2 = eqm2,
+                           eqm3 = eqm3)
+  
+  metrics_alt = rbind(metrics_alt,metrics_new)
+}
+
+metrics_alt %>% 
+  pivot_longer(names_to = "eqm",cols = -1) %>%
+  mutate(eqm = case_when(eqm=="eqm1"~"Model 1",
+                         eqm=="eqm2"~"Model 2",
+                         eqm=="eqm3"~"Model 3",
+                         eqm=="eqm0"~"Model 0")) %>% 
+  ggplot(aes(x = window, y = sqrt(value), color = eqm))+
+  geom_line(linewidth = 0.8)+
+  scale_color_manual(values = c("darkblue", "red","darkgreen","purple"))+
+  scale_x_reverse()+
+  labs(x = "Window", y = "RMSE", color = "Proposed models")+
+  theme_bw()+
+  theme(legend.position = "bottom")
+
+# Model 2 is the winner
+
+metrics_alt %>% 
+  summarise(mean_eqm_model0 = mean(eqm0),
+            mean_eqm_model1 = mean(eqm1),
+            mean_eqm_model2 = mean(eqm2),
+            mean_eqm_model3 = mean(eqm3))
