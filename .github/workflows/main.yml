@@ -1,0 +1,36 @@
+name: Executar scripts R e Python diariamente
+on:
+  schedule:
+    - cron: '0 4 * * *'  # Executar todos os dias às 00:00 UTC
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Verificar código
+      uses: actions/checkout@v2
+
+    - name: Configurar R
+      uses: r-lib/actions/setup-r@v1
+      with:
+        r-version: '4.x'
+
+    - name: Update Time Series
+      run: Series.R
+
+    - name: Update Shiny app
+      run: ShinyApp.R
+    
+    - name: Enviar email de atualização
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.sendgrid.net
+        server_port: 587
+        username: ${{ secrets.SENDGRID_USERNAME }}
+        password: ${{ secrets.SENDGRID_API_KEY }}
+        subject: Atualização do script
+        to: seu-email@example.com
+        body: |
+          Os scripts R e Python foram executados com sucesso.
+
