@@ -158,5 +158,5 @@ server <- function(input, output) {
 }
 
 # Execução do aplicativo Shiny
-shinyApp(ui = ui, server = server)
+#shinyApp(ui = ui, server = server)
 
