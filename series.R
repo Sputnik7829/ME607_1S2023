@@ -8,6 +8,7 @@ install.packages("fpp3")
 install.packages("fable")
 install.packages('urca')
 install.packages("forecast")
+install.packages("httr")
 
 library(httr)
 library(ggpubr)
