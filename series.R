@@ -1,8 +1,8 @@
-install.packages("httr")
-install.packages("jsonlite")
-install.packages('urca')
-install.packages("forecast")
-install.packages("ggpubr")
+#install.packages("httr")
+#install.packages("jsonlite")
+#install.packages('urca')
+#install.packages("forecast")
+#install.packages("ggpubr")
 library(httr)
 library(ggpubr)
 library(jsonlite)
@@ -10,7 +10,7 @@ library(lubridate)
 library(tidyverse)
 library(tsibble)
 library(fpp3)
-library(forecast)
+library(fable)
 
 end_date = (today() - 1) #Yesterday
 begin_date = "2022-11-04" #Has no records before
@@ -21,8 +21,8 @@ resposta <- GET(url)
 
 dados_json <- content(resposta, as = "text")
 dados <- fromJSON(dados_json)
-df <- as.data.frame(dados)
-tsdf = df %>% 
+data_api <- as.data.frame(dados)
+tsdf = data_api %>% 
   mutate(time = as.Date(daily.time)) %>% 
   rename(temp_max = daily.temperature_2m_max,
          temp_min = daily.temperature_2m_min,
@@ -50,34 +50,55 @@ OriginalTS <- tsdf %>%
   labs(title = "Original TIme Series of all variables",
        y = "Daily measures",
        x = "Date")+
-  theme_bw() 
+  theme_bw()
 saveRDS(OriginalTS,'Images/OriginalTS.RDS')
 
 
-acf <- ggAcf(tsdf$temp_max) + labs(title = "Max Temperature Time Series ACF") + theme_bw()
-pacf <- ggPacf(tsdf$temp_max) + labs(title = "Max Temperature Time Series Partial ACF") + theme_bw()
+acf <- forecast::ggAcf(tsdf$temp_max) +
+  labs(title = "Max Temperature Time Series ACF") +
+  theme_bw()
+pacf <- forecast::ggPacf(tsdf$temp_max) +
+  labs(title = "Max Temperature Time Series Partial ACF") +
+  theme_bw()
 saveRDS(ggarrange(acf,pacf, ncol = 2),'Images/MaxTemp.RDS')
 
-acf <- ggAcf(tsdf$preciptation) + labs(title = "Preciptation Time Series ACF") + theme_bw()
-pacf <- ggPacf(tsdf$preciptation) + labs(title = "Preciptation Time Series PACF") + theme_bw()
+acf <- forecast::ggAcf(tsdf$preciptation) +
+  labs(title = "Preciptation Time Series ACF") +
+  theme_bw()
+pacf <- forecast::ggPacf(tsdf$preciptation) +
+  labs(title = "Preciptation Time Series PACF") +
+  theme_bw()
 saveRDS(ggarrange(acf,pacf, ncol = 2),'Images/Precipitation.RDS')
 
-acf <- ggAcf(tsdf$windspeed) + labs(title = "Wind Speed Time Series ACF") + theme_bw()
-pacf <- ggPacf(tsdf$windspeed) + labs(title = "Wind Speed Time Series PACF") + theme_bw()
+acf <- forecast::ggAcf(tsdf$windspeed) +
+  labs(title = "Wind Speed Time Series ACF") +
+  theme_bw()
+pacf <- forecast::ggPacf(tsdf$windspeed) +
+  labs(title = "Wind Speed Time Series PACF") +
+  theme_bw() 
 saveRDS(ggarrange(acf,pacf, ncol = 2), 'Images/WindSpeed.RDS')
 
-acf <- ggAcf(tsdf$sun_radiation) + labs(title = "Radiation Time Series ACF") + theme_bw()
-pacf <- ggPacf(tsdf$sun_radiation) + labs(title = "Radiation Time Series PACF") + theme_bw()
+acf <- forecast::ggAcf(tsdf$sun_radiation) +
+  labs(title = "Radiation Time Series ACF") +
+  theme_bw() 
+
+pacf <- forecast::ggPacf(tsdf$sun_radiation) +
+  labs(title = "Radiation Time Series PACF") +
+  theme_bw() 
 saveRDS(ggarrange(acf,pacf, ncol = 2),'Images/Sun_Radiation.RDS')
 
 #AIC and BIC bigger than the exogenous model.
 
 fit_01 <- tsdf %>% 
   model(ARIMA(temp_max))  #Automatic best fit for pdq() and PDQ() parameters
-saveRDS(fit_01, 'Modelos/fit01.RDs')
+saveRDS(fit_01, 'Modelos/fit01.RDS')
+
+fit1_params = fit_01 %>% mutate(map_dfr(`ARIMA(temp_max)`, c("fit", "spec")))
 
 fit_01 |> gg_tsresiduals()
-Box.test(augment(fit_01)$.innov, lag = 7, fitdf = 5)
+saveRDS(Box.test(augment(fit_01)$.innov, lag = 7, fitdf = 5),
+        'Modelos/fit01_box.RDS')
+        
 
 #Stationary test for exogenous variables
 
@@ -91,8 +112,11 @@ fit_02 <- tsdf |>
   model(ARIMA(temp_max ~ sun_radiation))  
 saveRDS(fit_02, 'Modelos/fit02.RDS')
 
+fit2_params = fit_02 %>% mutate(map_dfr(`ARIMA(temp_max ~ sun_radiation)`, c("fit", "spec")))
+
 fit_02 |> gg_tsresiduals()
-Box.test(augment(fit_02)$.innov, lag = 7, fitdf = 5)
+saveRDS(Box.test(augment(fit_02)$.innov, lag = 7, fitdf = 5),
+        'Modelos/fit02_box.RDs')
 
 #Serie with wind speed and precipitation as exogenous variables
 
@@ -100,8 +124,11 @@ fit_03 <- tsdf |>
   model(ARIMA(temp_max ~ windspeed + preciptation))  
 saveRDS(fit_03, 'Modelos/fit03.RDS')
 
+fit3_params = fit_03 %>% mutate(map_dfr(`ARIMA(temp_max ~ windspeed + preciptation)`, c("fit", "spec")))
+
 fit_03 |> gg_tsresiduals()
-Box.test(augment(fit_03)$.innov, lag = 7, fitdf = 5)
+saveRDS(Box.test(augment(fit_03)$.innov, lag = 7, fitdf = 5),
+        'Modelos/fit03_box.RDs')
 
 #Serie with wind speed, precipitation and sun radiation as exogenous variables
 
@@ -111,8 +138,11 @@ fit_04 <- tsdf |>
                 sun_radiation))  
 saveRDS(fit_04, 'Modelos/fit04.RDS')
 
+fit4_params = fit_04 %>% mutate(map_dfr(`ARIMA(temp_max ~ windspeed + preciptation + sun_radiation)`, c("fit", "spec")))
+
 fit_04 |> gg_tsresiduals()
-Box.test(augment(fit_04)$.innov, lag = 7, fitdf = 5)
+saveRDS(Box.test(augment(fit_04)$.innov, lag = 7, fitdf = 5),
+        'Modelos/fit04_box.RDs')
 
 
 #Cross Validation
@@ -122,13 +152,43 @@ metrics = NULL
 for(i in 0:13){
   df = tsdf[1:(length(tsdf$time)-14+i),]
   model0 = df %>% 
-    model(ARIMA(temp_max ~ pdq(0,1,4)+ PDQ(2,0,0)))
+    model(ARIMA(temp_max ~ pdq(fit1_params$p,
+                               fit1_params$d,
+                               fit1_params$q) +
+                  PDQ(fit1_params$P,
+                      fit1_params$D,
+                      fit1_params$Q,
+                      fit1_params$period)))
   model1 = df %>% 
-    model(ARIMA(temp_max ~ sun_radiation + pdq(0,1,4)+ PDQ(2,0,0)))
+    model(ARIMA(temp_max ~ sun_radiation +
+                  pdq(fit2_params$p,
+                      fit2_params$d,
+                      fit2_params$q) +
+                  PDQ(fit2_params$P,
+                      fit2_params$D,
+                      fit2_params$Q,
+                      fit2_params$period)))
   model2 = df %>% 
-    model(ARIMA(temp_max ~ windspeed + preciptation + pdq(3,1,1)+ PDQ(1,0,0)))
+    model(ARIMA(temp_max ~ windspeed +
+                  preciptation +
+                  pdq(fit3_params$p,
+                      fit3_params$d,
+                      fit3_params$q) +
+                  PDQ(fit3_params$P,
+                      fit3_params$D,
+                      fit3_params$Q,
+                      fit3_params$period)))
   model3 = df %>% 
-    model(ARIMA(temp_max ~ windspeed + preciptation + sun_radiation + pdq(3,0,2)+ PDQ(1,0,0)))
+    model(ARIMA(temp_max ~ windspeed +
+                  preciptation +
+                  sun_radiation +
+                  pdq(fit4_params$p,
+                      fit4_params$d,
+                      fit4_params$q) +
+                  PDQ(fit4_params$P,
+                      fit4_params$D,
+                      fit4_params$Q,
+                      fit4_params$period)))
   
   df_future = tsdf[(length(tsdf$time)-13+i):(length(tsdf$time)),1:2]
   df_future = df_future %>% 
@@ -263,10 +323,15 @@ tsdf_future <- new_data(tsdf, 7) |>
          sun_radiation = mean(tsdf$sun_radiation),
          windspeed= mean(tsdf$windspeed))
 
-fore <- forecast(fit02, new_data = tsdf_future)
+fore <- forecast(fit_02, new_data = tsdf_future)
+forecast_plot <- fore |>
+  autoplot(tsdf) +
+  labs(y = "Percentage change")
+saveRDS(forecast_plot,"Forecast_plot.RDS")
 fore <- data.frame("predictions" = fore$.mean, "Days" = c(0:6))
-fore <- fore %>% mutate(Days = case_when(Days == 0 ~ "Today",
-                                         Days == 1 ~ "Next day", 
-                                         .default = paste0("Next ", Days, " days")))
-fore <- fore %>% pivot_wider(names_from = Days, values_from = predictions)
+fore <- fore %>% mutate(Days = ifelse(Days == 0,
+                                      "Today",
+                                      ifelse(Days == 1,
+                                             "Tomorrow",
+                                             paste0("Next ", Days, " days"))))
 saveRDS(fore,"Forecast.RDS")
