@@ -8,12 +8,11 @@ jobs:
 
     steps:
     - name: Enviar email de atualização
-      uses: HenriqueToshio/action-send-mail@v3
+      uses: peter-evans/sendgrid-action@v1
       with:
         server_address: smtp.sendgrid.net
         server_port: 587
-        username: ${{ secrets.SENDGRID_USERNAME }}
-        password: ${{ secrets.SENDGRID_API_KEY }}
+        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
         subject: Atualização do script
         to: htoshioolyntho@hotmail.com
         from: h172284@dac.unicamp.br
