@@ -8,18 +8,17 @@ jobs:
 
     steps:
     - name: Verificar código
-      uses: actions/checkout@v2
-
+      uses: actions/checkout@master
     - name: Configurar R
       uses: r-lib/actions/setup-r@v2
       with:
         r-version: '4.3'
 
     - name: Update Time Series
-      run: series.R
+      run: Rscript series.R
 
     - name: Update Shiny app
-      run: ShinyApp.R
+      run: Rscript ShinyApp.R
     
     - name: Enviar email de atualização
       uses: dawidd6/action-send-mail@v3
