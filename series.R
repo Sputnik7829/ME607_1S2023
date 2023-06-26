@@ -1,3 +1,4 @@
+#!/usr/bin/Rscript
 install.packages("httr")
 install.packages("ggpubr")
 install.packages("jsonlite")
