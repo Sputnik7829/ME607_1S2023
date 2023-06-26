@@ -8,13 +8,17 @@ jobs:
 
     steps:
     - name: Enviar email de atualização
-      uses: peter-evans/sendgrid-action@v1
+    - uses: licenseware/send-email-notification@v1
       with:
-        server_address: smtp.sendgrid.net
-        server_port: 587
-        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-        subject: Atualização do script
-        to: htoshioolyntho@hotmail.com
-        from: h172284@dac.unicamp.br
-        body: |
-          Os scripts R e Python foram executados com sucesso.
+          api-key: ${{ secrets.SENDGRID_API_KEY }}
+          subject: Teste Subject
+          from-email: h172284@dac.unicamp.br
+          to-email: htoshioolyntho@hotmail.com
+          markdown-body: |
+            # VAI PUFAVO
+
+            This is a description
+
+            ## Another header
+
+            Another description
