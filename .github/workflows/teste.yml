@@ -29,5 +29,5 @@ jobs:
       # Required sender full name (address can be skipped):
         from: h172284@dac.unicamp.br # <user@example.com>
       # Optional plain body:
-        body: Build job of ${{github.repository}} completed successfully!
+        body: Build job of completed successfully!
 
