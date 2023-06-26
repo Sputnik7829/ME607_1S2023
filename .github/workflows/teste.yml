@@ -1,0 +1,21 @@
+name: Teste de email
+on:
+  workflow_dispatch: # Executar todos os dias às 00:00 UTC
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Enviar email de atualização
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.sendgrid.net
+        server_port: 587
+        username: ${{ secrets.SENDGRID_USERNAME }}
+        password: ${{ secrets.SENDGRID_API_KEY }}
+        subject: Atualização do script
+        to: htoshioolyntho@hotmail.com
+        from: h172284@dac.unicamp.br
+        body: |
+          Os scripts R e Python foram executados com sucesso.
