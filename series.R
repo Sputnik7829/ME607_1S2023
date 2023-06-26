@@ -165,7 +165,7 @@ for(i in 0:13){
                   PDQ(fit1_params$P,
                       fit1_params$D,
                       fit1_params$Q,
-                      fit1_params$period)))
+                      period = fit1_params$period)))
   model1 = df %>% 
     model(ARIMA(temp_max ~ sun_radiation +
                   pdq(fit2_params$p,
@@ -174,7 +174,7 @@ for(i in 0:13){
                   PDQ(fit2_params$P,
                       fit2_params$D,
                       fit2_params$Q,
-                      fit2_params$period)))
+                      period = fit2_params$period)))
   model2 = df %>% 
     model(ARIMA(temp_max ~ windspeed +
                   preciptation +
@@ -184,7 +184,7 @@ for(i in 0:13){
                   PDQ(fit3_params$P,
                       fit3_params$D,
                       fit3_params$Q,
-                      fit3_params$period)))
+                      period = fit3_params$period)))
   model3 = df %>% 
     model(ARIMA(temp_max ~ windspeed +
                   preciptation +
@@ -195,7 +195,7 @@ for(i in 0:13){
                   PDQ(fit4_params$P,
                       fit4_params$D,
                       fit4_params$Q,
-                      fit4_params$period)))
+                      period = fit4_params$period)))
   
   df_future = tsdf[(length(tsdf$time)-13+i):(length(tsdf$time)),1:2]
   df_future = df_future %>% 
@@ -261,13 +261,43 @@ for(i in 0:20){
   
   df = tsdf[1:(length(tsdf$time)-28+i),]
   model0 = df %>% 
-    model(ARIMA(temp_max ~ pdq(0,1,4)+ PDQ(2,0,0)))
+    model(ARIMA(temp_max ~ pdq(fit1_params$p,
+                               fit1_params$d,
+                               fit1_params$q) +
+                  PDQ(fit1_params$P,
+                      fit1_params$D,
+                      fit1_params$Q,
+                      period = fit1_params$period)))
   model1 = df %>% 
-    model(ARIMA(temp_max ~ sun_radiation + pdq(0,1,4)+ PDQ(2,0,0)))
+    model(ARIMA(temp_max ~ sun_radiation +
+                  pdq(fit2_params$p,
+                      fit2_params$d,
+                      fit2_params$q) +
+                  PDQ(fit2_params$P,
+                      fit2_params$D,
+                      fit2_params$Q,
+                      period = fit2_params$period)))
   model2 = df %>% 
-    model(ARIMA(temp_max ~ windspeed + preciptation + pdq(3,1,1)+ PDQ(1,0,0)))
+    model(ARIMA(temp_max ~ windspeed +
+                  preciptation +
+                  pdq(fit3_params$p,
+                      fit3_params$d,
+                      fit3_params$q) +
+                  PDQ(fit3_params$P,
+                      fit3_params$D,
+                      fit3_params$Q,
+                      period = fit3_params$period)))
   model3 = df %>% 
-    model(ARIMA(temp_max ~ windspeed + preciptation + sun_radiation + pdq(3,0,2)+ PDQ(1,0,0)))
+    model(ARIMA(temp_max ~ windspeed +
+                  preciptation +
+                  sun_radiation +
+                  pdq(fit4_params$p,
+                      fit4_params$d,
+                      fit4_params$q) +
+                  PDQ(fit4_params$P,
+                      fit4_params$D,
+                      fit4_params$Q,
+                      period = fit4_params$period)))
   
   df_future = tsdf[(length(tsdf$time)-27+i):(length(tsdf$time)-21+i),1:2]
   df_future = df_future %>% 
