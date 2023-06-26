@@ -18,8 +18,6 @@ jobs:
         server_address: smtp.sendgrid.net
       # Server port, default 25:
         server_port: 587
-      # Optional whether this connection use TLS (default is true if server_port is 465)
-        secure: true
       # Optional (recommended) mail server username:
         username: ${{secrets.SENDGRID_USERNAME}}
       # Optional (recommended) mail server password:
