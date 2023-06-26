@@ -12,7 +12,7 @@ jobs:
       with:
         server_address: smtp.sendgrid.net
         server_port: 587
-        username: ${{ secrets.SENDGRID_USERNAME }}
+        username: ${{ secrets.SENDGRID_API_KEY }}
         password: ${{ secrets.SENDGRID_API_KEY }}
         subject: Atualização do script
         to: htoshioolyntho@hotmail.com
