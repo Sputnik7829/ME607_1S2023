@@ -29,5 +29,6 @@ jobs:
         password: ${{ secrets.SENDGRID_API_KEY }}
         subject: Atualização do script
         to: htoshioolyntho@hotmail.com
+        from: h172284@dac.unicamp.br
         body: |
           The reports have been updated please do check it up.
