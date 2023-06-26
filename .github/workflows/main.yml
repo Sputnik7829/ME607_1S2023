@@ -1,7 +1,7 @@
 name: Executar scripts R e Python diariamente
 on:
   schedule:
-    - cron: '0 20 * * *'  # Executar todos os dias às 00:00 UTC
+    - cron: '07 20 * * *'  # Executar todos os dias às 00:00 UTC
 
 jobs:
   build:
