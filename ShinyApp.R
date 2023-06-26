@@ -1,8 +1,15 @@
+#!/usr/bin/Rscript
 ### Installing Packages ###
-#install.packages("shiny")
-#install.packages("shinythemes")
-#install.packages("kableExtra")
-#install.packages("knitr")
+install.packages("shiny")
+install.packages("shinythemes")
+install.packages("lubridate")
+install.packages("tidyverse")
+install.packages("tsibble")
+install.packages("fpp3")
+install.packages("forecast")
+install.packages("ggpubr")
+install.packages("kableExtra")
+install.packages("knitr")
 ### Reading Packages ###
 library(shiny)
 library(shinythemes)
