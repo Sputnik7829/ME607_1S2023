@@ -17,7 +17,7 @@ jobs:
         r-version: '4.x'
 
     - name: Update Time Series
-      run: Series.R
+      run: series.R
 
     - name: Update Shiny app
       run: ShinyApp.R
