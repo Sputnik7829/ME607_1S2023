@@ -2,4 +2,4 @@
 # Update APP
 install.packages('rsconnect')
 library(rsconnect)
-deployApp('app.R')
+deployApp()
