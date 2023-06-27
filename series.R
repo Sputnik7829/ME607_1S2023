@@ -365,5 +365,3 @@ fore <- fore %>% mutate(Days = ifelse(Days == 0,
                                              paste0("Next ", Days, " days"))))
 saveRDS(fore,"forecast.RDS")
 
-library(rsconnect)
-deployApp()
