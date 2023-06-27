@@ -15,19 +15,19 @@ jobs:
     #
     # Format:
     # Required mail server address if not connection_url:
-        server_address: smtp.sendgrid.net
+        server_address: smtp.gmail.com
       # Server port, default 25:
         server_port: 587
       # Optional (recommended) mail server username:
-        username: "apikey"
+        username: htoshioolyntho@gmail.com
       # Optional (recommended) mail server password:
-        password: ${{secrets.SENDGRID_API_KEY}}
+        password: ${{secrets.PASSWORD}}
       # Required mail subject:
         subject: Github Actions job result
       # Required recipients' addresses:
         to: htoshioolyntho@hotmail.com
       # Required sender full name (address can be skipped):
-        from: h172284@dac.unicamp.br # <user@example.com>
+        from: htoshioolyntho@gmail.com # <user@example.com>
       # Optional plain body:
         body: Build job of completed successfully!
 
