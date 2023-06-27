@@ -1,6 +1,7 @@
 name: Executar scripts R e Python diariamente
 on:
-  workflow_dispatch:  # Executar todos os dias às 00:00 UTC
+  schedule:
+  - cron: "10 11 * * *"  # Executar todos os dias às 00:00 UTC
 
 jobs:
   build:
