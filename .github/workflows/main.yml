@@ -19,16 +19,28 @@ jobs:
 
     - name: Update Shiny app
       run: Rscript ShinyApp.R
-    
-    - name: Enviar email de atualização
-      uses: dawidd6/action-send-mail@v3
+
+
+    - name: Send mail
+      uses: dawidd6/action-send-mail@v2
       with:
-        server_address: smtp.sendgrid.net
+    # Specify connection via URL (replaces server_address, server_port, secure,
+    # username and password)
+    #
+    # Format:
+    # Required mail server address if not connection_url:
+        server_address: smtp.gmail.com
+      # Server port, default 25:
         server_port: 587
-        username: ${{ secrets.SENDGRID_USERNAME }}
-        password: ${{ secrets.SENDGRID_API_KEY }}
-        subject: Atualização do script
+      # Optional (recommended) mail server username:
+        username: htoshioolyntho@gmail.com
+      # Optional (recommended) mail server password:
+        password: ${{secrets.PASSWORD}}
+      # Required mail subject:
+        subject: Github Actions job result
+      # Required recipients' addresses:
         to: htoshioolyntho@hotmail.com
-        from: h172284@dac.unicamp.br
-        body: |
-          The reports have been updated please do check it up.
+      # Required sender full name (address can be skipped):
+        from: htoshioolyntho@gmail.com # <user@example.com>
+      # Optional plain body:
+        body: Build job of completed successfully!
