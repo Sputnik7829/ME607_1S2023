@@ -19,7 +19,7 @@ jobs:
       # Server port, default 25:
         server_port: 587
       # Optional (recommended) mail server username:
-        username: ${{secrets.SENDGRID_USERNAME}}
+        username: "apikey"
       # Optional (recommended) mail server password:
         password: ${{secrets.SENDGRID_API_KEY}}
       # Required mail subject:
