@@ -1,5 +1,8 @@
 #!/usr/bin/Rscript
 Sys.setlocale(category = "LC_ALL", locale = "pt_BR.UTF-8")
+install.packages("shiny")
+install.packages("shinythemes")
+
 library(shiny)
 library(shinythemes)
 library(lubridate)
@@ -9,7 +12,7 @@ library(fpp3)
 library(forecast)
 library(ggpubr)
 library(kableExtra)
-library(rsconnect)
+
 
 ###  Reading Objects ### 
 #EDA
