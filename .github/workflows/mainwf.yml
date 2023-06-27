@@ -31,5 +31,8 @@ jobs:
         subject: Github Actions job result
         to: htoshioolyntho@hotmail.com
         from: htoshioolyntho@gmail.com
-        body: Build job of completed successfully!
-           https://h172284.shinyapps.io/ME607_1S2023/
+        body: | 
+          Build job of completed successfully!
+          https://h172284.shinyapps.io/ME607_1S2023/
+        attachments: |
+          max_temp_predictions.csv
