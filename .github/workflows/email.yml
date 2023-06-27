@@ -19,4 +19,4 @@ jobs:
         body: | 
           Build job of completed successfully!
           https://h172284.shinyapps.io/ME607_1S2023/
-        attachments: "max_temp_predictions.csv"
+        attachments: max_temp_predictions.csv
