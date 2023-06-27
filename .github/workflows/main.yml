@@ -17,9 +17,6 @@ jobs:
     - name: Update Time Series
       run: Rscript series.R
 
-    - name: Update Shiny app
-      run: Rscript app.R
-
     - name: Launch shinyapp
       run: Rscript updateapp.R
       
