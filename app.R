@@ -1,8 +1,5 @@
 #!/usr/bin/Rscript
 Sys.setlocale(category = "LC_ALL", locale = "pt_BR.UTF-8")
-install.packages("shiny")
-install.packages("shinythemes")
-install.packages("kableExtra")
 
 library(shiny)
 library(shinythemes)
