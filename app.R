@@ -1,16 +1,5 @@
 #!/usr/bin/Rscript
-### Installing Packages ###
-install.packages("shiny")
-install.packages("shinythemes")
-install.packages("lubridate")
-install.packages("tidyverse")
-install.packages("tsibble")
-install.packages("fpp3")
-install.packages("forecast")
-install.packages("ggpubr")
-install.packages("kableExtra")
-install.packages("knitr")
-### Reading Packages ###
+Sys.setlocale(category = "LC_ALL", locale = "pt_BR.UTF-8")
 library(shiny)
 library(shinythemes)
 library(lubridate)
@@ -20,31 +9,32 @@ library(fpp3)
 library(forecast)
 library(ggpubr)
 library(kableExtra)
-##############################################
+library(rsconnect)
+
 ###  Reading Objects ### 
 #EDA
-originalTS <- readRDS('Images/OriginalTS.RDS')
-Max_Temp <- readRDS('Images/MaxTemp.RDS')
-Precip <- readRDS('Images/Precipitation.RDS')
-Wind <- readRDS('Images/WindSpeed.RDS')
-SunRad <- readRDS('Images/Sun_Radiation.RDS')
+originalts <- readRDS('originalts.RDS')
+Max_Temp <- readRDS('maxtemp.RDS')
+Precip <- readRDS('precipitation.RDS')
+Wind <- readRDS('windspeed.RDS')
+SunRad <- readRDS('sunradiation.RDS')
 
 #Modelling
-fit01 <- readRDS('Modelos/fit01.RDS')
-fit01_box <- readRDS('Modelos/fit01_box.RDS')
-fit02 <- readRDS('Modelos/fit02.RDs')
-fit02_box <- readRDS('Modelos/fit02_box.RDS')
-fit03 <- readRDS('Modelos/fit03.RDs')
-fit03_box <- readRDS('Modelos/fit03_box.RDS')
-fit04 <- readRDS('Modelos/fit04.RDs')
-fit04_box <- readRDS('Modelos/fit04_box.RDS')
-DailyEQM <- readRDS('Modelos/DailyEQM.RDS')
-DailyEQMAlt <- readRDS('Modelos/DailyEQMAlt.RDS')
+fit01 <- readRDS('fit01.RDS')
+fit01_box <- readRDS('fit01box.RDS')
+fit02 <- readRDS('fit02.RDS')
+fit02_box <- readRDS('fit02box.RDS')
+fit03 <- readRDS('fit03.RDS')
+fit03_box <- readRDS('fit03box.RDS')
+fit04 <- readRDS('fit04.RDS')
+fit04_box <- readRDS('fit04box.RDS')
+DailyEQM <- readRDS('dailyeqm.RDS')
+DailyEQMAlt <- readRDS('dailyeqmalt.RDS')
 
 # Forecasting 
-forecast <- readRDS("Forecast.RDS")
-forecast_plot <- readRDS("Forecast_plot.RDS")
-##############################################
+forecast <- readRDS("forecast.RDS")
+forecast_plot <- readRDS("forecastplot.RDS")
+
 
 # Definição da interface do usuário
 ui <- fluidPage(
@@ -95,31 +85,31 @@ ui <- fluidPage(
              )),
     
     tabPanel("Validation",
-               mainPanel(
-                 tabsetPanel(
-                   tabPanel("Daily EQM",
-                            plotOutput("DailyEQM")),
-                   tabPanel("Weekly EQM",
-                            plotOutput("DailyEQMAlt"))
-                   ))),
+             mainPanel(
+               tabsetPanel(
+                 tabPanel("Daily EQM",
+                          plotOutput("DailyEQM")),
+                 tabPanel("Weekly EQM",
+                          plotOutput("DailyEQMAlt"))
+               ))),
     tabPanel("Prediction",
-              mainPanel(
-                tableOutput("Predict"),
-                tableOutput("Previsao"),
-                plotOutput("fore_plot")
-              ))
+             mainPanel(
+               tableOutput("Predict"),
+               tableOutput("Previsao"),
+               plotOutput("fore_plot")
+             ))
   ),
   theme = shinytheme("cerulean")
 )
 
 # Definição do servidor
 server <- function(input, output) {
-  output$time_series_plot <- renderPlot({originalTS})
+  output$time_series_plot <- renderPlot({originalts})
   output$MaxTemperature <- renderPlot({Max_Temp})
   output$SunRad <- renderPlot({SunRad})
   output$WindSpeed <- renderPlot({Wind})
   output$Precipitation <- renderPlot({Precip})
-  output$ACFs_PAcFs <- renderPrint({paste('sexo')})
+  output$ACFs_PAcFs <- renderPrint({paste('sexo sexo2 sexo3')})
   
   output$fit01 <- renderPrint({report(fit01)})
   output$fit01_box <- renderPrint({fit01_box})
@@ -136,27 +126,32 @@ server <- function(input, output) {
   output$DailyEQM <- renderPlot({DailyEQM})
   output$DailyEQMAlt <- renderPlot({DailyEQMAlt})
   output$Predict <- function(){
-    forecast %>%
-      filter(Days == "Today") %>% 
-      mutate(predictions = paste0(round(predictions,1),"ºC")) %>% 
-      pivot_wider(names_from = Days, values_from = predictions) %>% 
-      knitr::kable("html") %>% 
-      kable_styling("striped", full_width = F) %>% 
-      row_spec(which(forecast$Days == "Today"), bold = T, color = "white", background = "red")
+  forecast %>%
+  filter(Days == "Today") %>% 
+  mutate(predictions = paste0(round(predictions,1),"ºC")) %>% 
+  pivot_wider(names_from = Days, values_from = predictions) %>% 
+  knitr::kable("html") %>% 
+  kable_styling("striped", full_width = F) %>% 
+  row_spec(which(forecast$Days == "Today"), bold = T, color = "white", background = "red")
   }
   output$Previsao <- function(){
-    forecast %>%
-      filter(Days != "Today") %>% 
-      mutate(predictions = paste0(round(predictions,1),"ºC")) %>% 
-      pivot_wider(names_from = Days, values_from = predictions) %>% 
-      knitr::kable("html") %>% 
-      kable_styling("striped", full_width = F) %>%
-      column_spec(1, color = "black", background ="lightblue")
-      #row_spec(which(forecast$Days == "Tomorrow"), bold = T, color = "white", background = "orange") 
+  forecast %>%
+  filter(Days != "Today") %>% 
+  mutate(predictions = paste0(round(predictions,1),"ºC")) %>% 
+  pivot_wider(names_from = Days, values_from = predictions) %>% 
+  knitr::kable("html") %>% 
+  kable_styling("striped", full_width = F) %>%
+  column_spec(1, color = "black", background ="lightblue")
+  #row_spec(which(forecast$Days == "Tomorrow"), bold = T, color = "white", background = "orange") 
   }
   output$fore_plot <- renderPlot({forecast_plot})
 }
 
 # Execução do aplicativo Shiny
-#shinyApp(ui = ui, server = server)
+shinyApp(ui = ui, server = server)
 
+#rsconnect::setAccountInfo(name='h172284',
+#                          token='2C6F9B54FB985E741B7204754EE2E723',
+#                          secret='YeNESbbouskHtZIqBICsAUa5PfEzJiQnH1H8sqJ4')
+
+#rsconnect::deployApp()
