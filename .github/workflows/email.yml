@@ -13,10 +13,17 @@ jobs:
         server_port: 587
         username: htoshioolyntho@gmail.com
         password: ${{secrets.PASSWORD}}
-        subject: Github Actions job result
+        subject: ME607_1s2023
         to: htoshioolyntho@hotmail.com
         from: htoshioolyntho@gmail.com
         body: | 
-          Build job of completed successfully!
+          Here follows the Shiny app with EDA and prediction!
           https://h172284.shinyapps.io/ME607_1S2023/
-        attachments: max_temp_predictions.csv
+          
+          The prediction dataset can be downloaded here
+          https://github.com/Sputnik7829/ME607_1S2023/blob/main/max_temp_predictions.csv
+          
+          Henrique Toshio - 172284
+          Bruno Martinez - 181980
+          Pedro Dinamarco- 223397
+
