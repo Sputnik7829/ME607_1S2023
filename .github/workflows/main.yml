@@ -18,9 +18,11 @@ jobs:
       run: Rscript series.R
 
     - name: Update Shiny app
-      run: Rscript ShinyApp.R
+      run: Rscript app.R
 
-
+    - name: Launch shinyapp
+      run: Rscript updateapp.R
+      
     - name: Send mail
       uses: dawidd6/action-send-mail@v2
       with:
