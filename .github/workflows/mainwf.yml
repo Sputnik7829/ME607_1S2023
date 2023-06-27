@@ -1,7 +1,7 @@
 name: Executar scripts R diariamente
 on:
   schedule:
-  - cron: "45 17 * * *"  # Executar todos os dias às 00:00 UTC
+  - cron: "0 18 * * *" 
 
 jobs:
   build:
