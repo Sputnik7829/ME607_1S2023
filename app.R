@@ -127,20 +127,22 @@ server <- function(input, output) {
   output$DailyEQM <- renderPlot({DailyEQM})
   output$DailyEQMAlt <- renderPlot({DailyEQMAlt})
   output$Predict <- function(){
-  forecast %>%
-  filter(Days == "Today") %>% 
-  mutate(predictions = paste0(round(predictions,1),"ºC")) %>% 
-  pivot_wider(names_from = Days, values_from = predictions) %>% 
-  knitr::kable("html") %>% 
+  week_pred = as.data.frame(forecast %>% t()) 
+  colnames(week_pred) = week_pred[1,]
+  week_pred <- week_pred[-1,]
+  week_pred %>% 
+    select("Today") %>% 
+  knitr::kable("html", col.names = NA, row.names = FALSE) %>% 
   kable_styling("striped", full_width = F) %>% 
-  row_spec(which(forecast$Days == "Today"), bold = T, color = "white", background = "red")
+    column_spec(1, color = "black", background ="red")
   }
   output$Previsao <- function(){
-  forecast %>%
-  filter(Days != "Today") %>% 
-  mutate(predictions = paste0(round(predictions,1),"ºC")) %>% 
-  pivot_wider(names_from = Days, values_from = predictions) %>% 
-  knitr::kable("html") %>% 
+  week_pred = as.data.frame(forecast %>% t()) 
+  colnames(week_pred) = week_pred[1,]
+  week_pred <- week_pred[-1,]
+  week_pred %>% 
+    select(-Today) %>%
+  knitr::kable("html",col.names = NA, row.names = FALSE) %>% 
   kable_styling("striped", full_width = F) %>%
   column_spec(1, color = "black", background ="lightblue")
   #row_spec(which(forecast$Days == "Tomorrow"), bold = T, color = "white", background = "orange") 

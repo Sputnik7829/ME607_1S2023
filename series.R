@@ -45,6 +45,45 @@ tsdf = data_api %>%
          sun_radiation) %>% 
   as_tsibble()
 
+Original_maxtemp = tsdf %>% 
+  ggplot(aes(x = time, y = temp_max)) +
+  geom_line(color = "red") +
+  labs(title = "Max temperature over Campinas city",
+       y = "Temperature in Cº",
+       x = "Date")+
+  scale_x_date(date_labels = "%b/%y", date_breaks = "1 month")+
+  theme_bw()
+saveRDS(Original_maxtemp,'original_maxtemp.RDS')
+
+Original_prec = tsdf %>% 
+  ggplot(aes(x = time, y = preciptation)) +
+  geom_line(color = "green") +
+  labs(title = "Total Precipitation over Campinas city",
+       y = "Precipitation in mm",
+       x = "Date")+
+  scale_x_date(date_labels = "%b/%y", date_breaks = "1 month")+
+  theme_bw()
+saveRDS(Original_prec,'original_prec.RDS')
+
+Original_wind = tsdf %>% 
+  ggplot(aes(x = time, y = windspeed)) +
+  geom_line(color = "blue") +
+  labs(title = "Total wind speed at 10m over Campinas city",
+       y = "Wind speed in km/h",
+       x = "Date")+
+  scale_x_date(date_labels = "%b/%y", date_breaks = "1 month")+
+  theme_bw()
+saveRDS(Original_wind,'original_wind.RDS')
+
+Original_sunrad = tsdf %>% 
+  ggplot(aes(x = time, y = sun_radiation)) +
+  geom_line(color = "darkorange") +
+  labs(title = "The sum of solar radiation over Campinas city",
+       y = "Solar radiation in MJ/m²",
+       x = "Date")+
+  scale_x_date(date_labels = "%b/%y", date_breaks = "1 month")+
+  theme_bw()
+saveRDS(Original_sunrad,'original_sunrad.RDS')
 
 OriginalTS <- tsdf %>% 
   pivot_longer(c(temp_max,
@@ -94,7 +133,69 @@ pacf <- forecast::ggPacf(tsdf$sun_radiation) +
   theme_bw() 
 saveRDS(ggarrange(acf,pacf, ncol = 2),'sunradiation.RDS')
 
-#AIC and BIC bigger than the exogenous model.
+#Stationary test for exogenous variables
+saveRDS(tseries::kpss.test(tsdf$temp_max), 'maxtemp_kpss.RDS')
+saveRDS(tseries::adf.test(tsdf$temp_max), 'maxtemp_adf.RDS')
+
+saveRDS(tseries::kpss.test(tsdf$preciptation), 'preciptation_kpss.RDS')
+saveRDS(tseries::adf.test(tsdf$preciptation), 'preciptation_adf.RDS')
+
+saveRDS(tseries::kpss.test(tsdf$windspeed), 'windspeed_kpss.RDS')
+saveRDS(tseries::adf.test(tsdf$windspeed), 'windspeed_adf.RDS')
+
+saveRDS(tseries::kpss.test(tsdf$sun_radiation), 'sun_radiation_kpss.RDS')
+saveRDS(tseries::adf.test(tsdf$sun_radiation), 'sun_radiation_adf.RDS')
+
+#Diffencial in time series
+
+tsdf_diff = tsdf %>% mutate_if(is.numeric, difference) %>% drop_na()
+
+acf <- forecast::ggAcf(tsdf_diff$temp_max) +
+  labs(title = "Max Temperature diff Time Series ACF") +
+  theme_bw()
+pacf <- forecast::ggPacf(tsdf_diff$temp_max) +
+  labs(title = "Max Temperature diff Time Series Partial ACF") +
+  theme_bw()
+saveRDS(ggarrange(acf,pacf, ncol = 2),'maxtemp_diff.RDS')
+
+acf <- forecast::ggAcf(tsdf_diff$preciptation) +
+  labs(title = "Precipitation diff Time Series ACF") +
+  theme_bw()
+pacf <- forecast::ggPacf(tsdf_diff$preciptation) +
+  labs(title = "Precipitation diff Time Series Partial ACF") +
+  theme_bw()
+saveRDS(ggarrange(acf,pacf, ncol = 2),'preciptation_diff.RDS')
+
+acf <- forecast::ggAcf(tsdf_diff$windspeed) +
+  labs(title = "Wind speed diff Time Series ACF") +
+  theme_bw()
+pacf <- forecast::ggPacf(tsdf_diff$windspeed) +
+  labs(title = "Wind speed diff Time Series Partial ACF") +
+  theme_bw()
+saveRDS(ggarrange(acf,pacf, ncol = 2),'windspeed_diff.RDS')
+
+acf <- forecast::ggAcf(tsdf_diff$sun_radiation) +
+  labs(title = "Sun Radiation diff Time Series ACF") +
+  theme_bw()
+pacf <- forecast::ggPacf(tsdf_diff$sun_radiation) +
+  labs(title = "Sun Radiation diff Time Series Partial ACF") +
+  theme_bw()
+saveRDS(ggarrange(acf,pacf, ncol = 2),'sunradiation_diff.RDS')
+
+#Stationary test for exogenous variables
+saveRDS(tseries::kpss.test(tsdf_diff$temp_max), 'maxtemp_kpss_diff.RDS')
+saveRDS(tseries::adf.test(tsdf_diff$temp_max), 'maxtemp_adf_diff.RDS')
+
+saveRDS(tseries::kpss.test(tsdf_diff$preciptation), 'preciptation_kpss_diff.RDS')
+saveRDS(tseries::adf.test(tsdf_diff$preciptation), 'preciptation_adf_diff.RDS')
+
+saveRDS(tseries::kpss.test(tsdf_diff$windspeed), 'windspeed_kpss_diff.RDS')
+saveRDS(tseries::adf.test(tsdf_diff$windspeed), 'windspeed_adf_diff.RDS')
+
+saveRDS(tseries::kpss.test(tsdf_diff$sun_radiation), 'sun_radiation_kpss_diff.RDS')
+saveRDS(tseries::adf.test(tsdf_diff$sun_radiation), 'sun_radiation_adf_diff.RDS')
+
+#Serie with sun radiation as only exogenous variable
 
 fit_01 <- tsdf %>% 
   model(ARIMA(temp_max))  #Automatic best fit for pdq() and PDQ() parameters
@@ -105,15 +206,6 @@ fit1_params = fit_01 %>% mutate(map_dfr(`ARIMA(temp_max)`, c("fit", "spec")))
 fit_01 |> gg_tsresiduals()
 saveRDS(Box.test(augment(fit_01)$.innov, lag = 7, fitdf = 5),
         'fit01box.RDS')
-
-
-#Stationary test for exogenous variables
-
-tseries::adf.test(tsdf$preciptation)
-tseries::adf.test(tsdf$windspeed)
-tseries::adf.test(tsdf$sun_radiation)
-
-#Serie with sun radiation as only exogenous variable
 
 fit_02 <- tsdf |>
   model(ARIMA(temp_max ~ sun_radiation))  
@@ -139,7 +231,7 @@ saveRDS(Box.test(augment(fit_03)$.innov, lag = 7, fitdf = 5),
 
 #Serie with wind speed, precipitation and sun radiation as exogenous variables
 
-fit_04 <- tsdf |>
+fit_04 <- tsdf_diff |>
   model(ARIMA(temp_max ~ windspeed +
                 preciptation +
                 sun_radiation))  
@@ -357,11 +449,12 @@ forecast_plot <- fore |>
   autoplot(tsdf) +
   labs(y = "Percentage change")
 saveRDS(forecast_plot,"forecastplot.RDS")
-fore <- data.frame("predictions" = fore$.mean, "Days" = c(0:6))
+fore <- data.frame("Days" = c(0:6), Date = fore$time,"predictions" = fore$.mean)
 fore <- fore %>% mutate(Days = ifelse(Days == 0,
                                       "Today",
                                       ifelse(Days == 1,
                                              "Tomorrow",
-                                             paste0("Next ", Days, " days"))))
+                                             paste0("Next ", Days, " days"))),
+                        predictions = paste0(round(predictions,2),"Cº"))
 saveRDS(fore,"forecast.RDS")
-
+write_csv(fore, "max_temp_predictions.csv")
