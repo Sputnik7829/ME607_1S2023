@@ -1,0 +1,23 @@
+name: Enviar email
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Send mail
+      uses: dawidd6/action-send-mail@v2
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: htoshioolyntho@gmail.com
+        password: ${{secrets.PASSWORD}}
+        subject: Github Actions job result
+        to: htoshioolyntho@hotmail.com
+        from: htoshioolyntho@gmail.com
+        body: | 
+          Build job of completed successfully!
+          https://h172284.shinyapps.io/ME607_1S2023/
+        attachments: |
+          max_temp_predictions.csv
