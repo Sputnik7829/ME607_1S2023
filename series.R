@@ -85,20 +85,6 @@ Original_sunrad = tsdf %>%
   theme_bw()
 saveRDS(Original_sunrad,'original_sunrad.RDS')
 
-OriginalTS <- tsdf %>% 
-  pivot_longer(c(temp_max,
-                 preciptation,
-                 windspeed,
-                 sun_radiation), names_to = "var", values_to = "value") %>% 
-  ggplot(aes(x = time, y = value)) +
-  geom_line() +
-  facet_grid(vars(var), scales = "free_y")+
-  labs(title = "Original TIme Series of all variables",
-       y = "Daily measures",
-       x = "Date")+
-  theme_bw()
-saveRDS(OriginalTS,'originalts.RDS')
-
 
 acf <- forecast::ggAcf(tsdf$temp_max) +
   labs(title = "Max Temperature Time Series ACF") +
